@@ -68,7 +68,7 @@ public class ZombleControl : MonoBehaviour
     {
         healthPoint -= damage;
 
-        if (healthPoint <= 0)
+        if (healthPoint <= 0 && !isDie)
         {
             isDie = true;
             targetObject.GetComponent<PlayerControl>().GetGold(Random.Range(50, 100));
@@ -80,18 +80,19 @@ public class ZombleControl : MonoBehaviour
 
     private void RangedAttack()
     {
-        if (shootCoolTimer > shootCoolTime)
+        if (shootCoolTimer < shootCoolTime)
         {
-            GameObject projectile = Instantiate(projectileObject, transform.position + Vector3.up , Quaternion.identity);
-
-            GuidedProjectile guidedProjectile = projectile.GetComponent<GuidedProjectile>();
-
-            guidedProjectile.SetTarget(targetObject, 5.0f, damage);
-
-            Destroy(projectile, 2.0f);
-
-            shootCoolTimer = 0.0f;
+            return;
         }
+        GameObject projectile = Instantiate(projectileObject, transform.position + Vector3.up, Quaternion.identity);
+
+        GuidedProjectile guidedProjectile = projectile.GetComponent<GuidedProjectile>();
+
+        guidedProjectile.SetTarget(targetObject, 5.0f, damage);
+
+        Destroy(projectile, 2.0f);
+
+        shootCoolTimer = 0.0f;
     }
 
     IEnumerator SetTrace()

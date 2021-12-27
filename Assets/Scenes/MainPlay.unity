@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.45140058, g: 0.500893, b: 0.57231724, a: 1}
+  m_IndirectSpecularColor: {r: 0.45140082, g: 0.5008932, b: 0.5723176, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -609,8 +609,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e117bd82d5a2474e9932468086dcbd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 15
-  price: 3500
+  damage: 20
+  price: 5000
   gunName: M249
   ammunition: 200
   curAmmunition: 200
@@ -868,7 +868,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 15
-  price: 2400
+  price: 2800
   gunName: AK47
   ammunition: 31
   curAmmunition: 31
@@ -1059,7 +1059,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 12
-  price: 2100
+  price: 2800
   gunName: M4
   ammunition: 31
   curAmmunition: 31
@@ -2048,7 +2048,7 @@ MonoBehaviour:
   gunName: SG4
   ammunition: 8
   curAmmunition: 8
-  shootCoolTime: 0.2
+  shootCoolTime: 0.8
   muzzleFlash: {fileID: 1336949550903370, guid: 4543ab5e3d405ec40a8d4e9aa5165030, type: 3}
   muzzleTransform: {fileID: 788749209}
   sparkEffect: {fileID: 1000011945391522, guid: 78b71003e8b357d4bbf89c8b5e5e4f0e, type: 3}
@@ -2587,6 +2587,10 @@ PrefabInstance:
     - target: {fileID: 2369712856593308033, guid: 730000931cae1454c8083362445e8f75, type: 3}
       propertyPath: m_Name
       value: Male 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2369712856593308033, guid: 730000931cae1454c8083362445e8f75, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 2369712856593335393, guid: 730000931cae1454c8083362445e8f75, type: 3}
       propertyPath: m_RootOrder

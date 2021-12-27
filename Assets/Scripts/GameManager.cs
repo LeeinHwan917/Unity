@@ -36,10 +36,18 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        hpBar.fillAmount = (float)playerControl.CheckHealthPoint(0) / 100.0f;
+        PrintPlayerGunInfo();
+    }
+    
+    public void UpdatePlayerHealthPoint(float hp, float maxhp)
+    {
+        hpBar.fillAmount = hp / maxhp;
 
-        hpText.text = "100 / " + (float)playerControl.CheckHealthPoint(0);
+        hpText.text = maxhp.ToString() + " / " + hp;
+    }
 
+    private void PrintPlayerGunInfo()
+    {
         gunNameText.text = gunControl.gunName;
 
         gunAmmoText.text = gunControl.curAmmunition.ToString() + " / " + gunControl.ammunition.ToString();

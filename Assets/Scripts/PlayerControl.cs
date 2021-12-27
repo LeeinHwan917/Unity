@@ -53,82 +53,12 @@ public class PlayerControl : MonoBehaviour
 
     void Update()
     {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        {
-            transform.Translate(new Vector3(h, 0, v) * moveSpeed * Time.deltaTime * 2.5f);
-            playerAnimator.SetBool("ShiftDown", true);
-        }
-        else
-        {
-            transform.Translate(new Vector3(h, 0, v) * moveSpeed * Time.deltaTime);
-            playerAnimator.SetBool("ShiftDown", false);
-        }
-
-        mouseX += Input.GetAxis("Mouse X");
-        mouseY += Input.GetAxis("Mouse Y");
-
-        mouseY = Mathf.Clamp(mouseY, -35.0f, 35.0f);
-
-        transform.localEulerAngles = new Vector3(0.0f, mouseX, 0.0f) * mouseSpeed;
-        cameraObject.transform.localEulerAngles = new Vector3(-mouseY, mouseX, 0.0f) * mouseSpeed;
-        cameraObject.transform.position = cameraTransform.position;
-
-        playerAnimator.SetFloat("Horizontal", h);
-        playerAnimator.SetFloat("Vertical", v);
-
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            RaycastHit jhit;
-            if (Physics.Raycast(rayTransform.position, Vector3.down, out jhit, 0.5f)) // 점프할때 쓰는거임
-            {
-                rigid.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
-            }
-        }
+        Move();
+        Jump();
+        MouseMove();
+        ForwardRaycast();
 
         i_frameTimer += Time.deltaTime;
-
-
-        RaycastHit hit;
-        if (Physics.Raycast(cameraObject.transform.position, cameraObject.transform.forward, out hit, 3.5f)) // 총 살때 쓰는거임
-        {
-            if (hit.transform.gameObject.tag == "Gun")
-            {
-                GunControl gunControl = hit.transform.gameObject.GetComponent<GunControl>();
-
-                gameManager.ShowGunInfo(gunControl.name, "PRICE : " + gunControl.price.ToString());
-
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    if (gunControl.price <= cur_Gold)
-                    {
-                        GunControl _gunControl = gunObject.GetComponent<GunControl>();
-
-                        _gunControl.SetEquip(false);
-                        gunObject.transform.position = hit.transform.gameObject.transform.position;
-                        gunObject.transform.rotation = hit.transform.gameObject.transform.rotation;
-
-                        gunControl.SetEquip(true);
-                        gunObject = hit.transform.gameObject;
-                        gameManager.ChangeGun(gunObject.GetComponent<GunControl>());
-
-                        UseGold(gunControl.price);
-                    }
-                }
-            }
-            else
-            {
-                gameManager.ShowGunInfo(" ", " "); // 코드 줄이는 방법 생각하기
-            }
-        }
-        else
-        {
-            gameManager.ShowGunInfo(" ", " "); // 코드 줄이는 방법 생각하기
-        }
-
         gameManager.UpdateGold(cur_Gold);
     }
 
@@ -143,7 +73,6 @@ public class PlayerControl : MonoBehaviour
                 if (enemyControl.CheckHealthPoint(0) > 0)
                 {
                     CheckHealthPoint(enemyControl.damage);
-
                     i_frameTimer = 0.0f;
                 }
             }
@@ -158,7 +87,105 @@ public class PlayerControl : MonoBehaviour
         }
     }
 
-    public int CheckHealthPoint(int damage)
+    private void Move()
+    {
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+
+        float runSpeed = 2.5f;
+
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            playerAnimator.SetBool("ShiftDown", true);
+        }
+        else
+        {
+            runSpeed = 1.0f;
+            playerAnimator.SetBool("ShiftDown", false);
+        }
+
+        transform.Translate(new Vector3(h, 0, v) * moveSpeed * Time.deltaTime * runSpeed);
+
+        playerAnimator.SetFloat("Horizontal", h);
+        playerAnimator.SetFloat("Vertical", v);
+    }
+
+    private void Jump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            RaycastHit jhit;
+            if (Physics.Raycast(rayTransform.position, Vector3.down, out jhit, 0.5f)) // 점프할때 쓰는거임
+            {
+                rigid.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
+            }
+        }
+    }
+
+    private void MouseMove()
+    {
+        mouseX += Input.GetAxis("Mouse X");
+        mouseY += Input.GetAxis("Mouse Y");
+
+        mouseY = Mathf.Clamp(mouseY, -35.0f, 35.0f);
+
+        transform.localEulerAngles = new Vector3(0.0f, mouseX, 0.0f) * mouseSpeed;
+        cameraObject.transform.localEulerAngles = new Vector3(-mouseY, mouseX, 0.0f) * mouseSpeed;
+        cameraObject.transform.position = cameraTransform.position;
+    }
+
+    private void ForwardRaycast()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(cameraObject.transform.position, cameraObject.transform.forward, out hit, 3.5f))
+        {
+            if (hit.transform.gameObject.tag == "Gun")
+            {
+                GunShopSys(hit);// 총 살때 쓰는거임
+            }
+        }
+        else
+        {
+            ResetGunInfo();
+        }
+    }
+
+    private void GunShopSys(RaycastHit hit)
+    {
+        GunControl gunControl = hit.transform.gameObject.GetComponent<GunControl>();
+
+        gameManager.ShowGunInfo(gunControl.name, "PRICE : " + gunControl.price.ToString());
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (gunControl.price > cur_Gold)
+            {
+                return;
+            }
+            GunControl _gunControl = gunObject.GetComponent<GunControl>();
+
+            _gunControl.SetEquip(false);
+            gunObject.transform.position = hit.transform.gameObject.transform.position;
+            gunObject.transform.rotation = hit.transform.gameObject.transform.rotation;
+
+            gunControl.SetEquip(true);
+            gunObject = hit.transform.gameObject;
+            gameManager.ChangeGun(gunObject.GetComponent<GunControl>());
+
+            UseGold(gunControl.price);
+        }
+        else
+        {
+            ResetGunInfo();
+        }
+    }
+
+    public void ResetGunInfo()
+    {
+        gameManager.ShowGunInfo(" ", " ");
+    }
+
+    public void CheckHealthPoint(int damage)
     {
         healthPoint -= damage;
 
@@ -167,7 +194,7 @@ public class PlayerControl : MonoBehaviour
             Destroy(gameObject);
         }
 
-        return healthPoint;
+        gameManager.UpdatePlayerHealthPoint((float)healthPoint, (float)MaxHealthPoint);
     }
 
     public void GetGold(int value)

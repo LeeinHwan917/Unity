@@ -60,10 +60,7 @@ public class GunControl : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.R) && curAmmunition < ammunition)
             {
-                if (curAmmunition >= 1) // 약실에 총알이 하나라도 있으면...... 박스탄창 + 약실탄창
-                    curAmmunition = ammunition;
-                else // 약실에 탄알이 없으면..... only 박스탄창.
-                    curAmmunition = ammunition - 1;
+                Reload();
             }
 
             shootCoolTimer += Time.deltaTime;
@@ -81,7 +78,7 @@ public class GunControl : MonoBehaviour
 
     private void Shot()
     {
-        if (shootCoolTimer < shootCoolTime || curAmmunition < 0)
+        if (shootCoolTimer < shootCoolTime || curAmmunition <= 0)
         {
             return;
         }
@@ -109,6 +106,14 @@ public class GunControl : MonoBehaviour
         }
         curAmmunition--;
         shootCoolTimer = 0.0f;
+    }
+
+    private void Reload()
+    {
+        if (curAmmunition >= 1) // 약실에 총알이 하나라도 있으면...... 박스탄창 + 약실탄창
+            curAmmunition = ammunition;
+        else // 약실에 탄알이 없으면..... only 박스탄창.
+            curAmmunition = ammunition - 1;
     }
 
     public void SetEquip(bool Equip)

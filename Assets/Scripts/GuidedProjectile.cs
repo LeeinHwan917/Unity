@@ -14,6 +14,14 @@ public class GuidedProjectile : MonoBehaviour
 
     void Update()
     {
+        if (targetObject)
+        {
+            Trace();
+        }
+    }
+
+    private void Trace()
+    {
         transform.LookAt(targetObject.transform.position + Vector3.up * 1.5f);
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
     }
