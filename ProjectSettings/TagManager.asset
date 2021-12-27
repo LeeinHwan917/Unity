@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - PlayerBorder
+  - Enemy
+  - Enemies
+  - Gun
   layers:
   - Default
   - TransparentFX

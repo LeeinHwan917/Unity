@@ -21,6 +21,14 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GunControl gunControl;
 
+    [SerializeField]
+    private Text saleGunNameText;
+    [SerializeField]
+    private Text saleGunPriceText;
+
+    [SerializeField]
+    private Text goldText;
+
     private void Start()
     {
         hpBar.fillAmount = 1.0f;
@@ -35,5 +43,21 @@ public class GameManager : MonoBehaviour
         gunNameText.text = gunControl.gunName;
 
         gunAmmoText.text = gunControl.curAmmunition.ToString() + " / " + gunControl.ammunition.ToString();
+    }
+
+    public void ShowGunInfo(string name , string price)
+    {
+        saleGunNameText.text = name;
+        saleGunPriceText.text = price;
+    }
+
+    public void UpdateGold(int curGold)
+    {
+        goldText.text = "Gold :" + curGold.ToString();
+    }
+
+    public void ChangeGun(GunControl gunControl)
+    {
+        this.gunControl = gunControl;
     }
 }
