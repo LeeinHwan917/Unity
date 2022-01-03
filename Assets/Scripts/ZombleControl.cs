@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class ZombleControl : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class ZombleControl : MonoBehaviour
     [SerializeField]
     public int damage = 5;
 
+    [SerializeField]
+    private int maxHealthPoint = 100;
     [SerializeField]
     private int healthPoint = 100;
 
@@ -41,6 +44,13 @@ public class ZombleControl : MonoBehaviour
     [SerializeField]
     private GameObject projectileObject;
 
+    [SerializeField]
+    private Image hpbar;
+    [SerializeField]
+    private GameObject hpPos;
+    [SerializeField]
+    private Text hptext;
+
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -61,7 +71,18 @@ public class ZombleControl : MonoBehaviour
             agent.isStopped = true;
         }
 
+        UpdateHealthBar();
+
         shootCoolTimer += Time.deltaTime;
+    }
+
+    public void InitEnemy(int maxhealth , int damage , float speed, GameObject targetObject)
+    {
+        this.maxHealthPoint = maxhealth;
+        healthPoint = maxHealthPoint;
+        this.targetObject = targetObject;
+        this.damage = damage;
+        this.moveSpeed = speed;
     }
 
     public int CheckHealthPoint(int damage)
@@ -70,12 +91,21 @@ public class ZombleControl : MonoBehaviour
 
         if (healthPoint <= 0 && !isDie)
         {
+            healthPoint = 0;
             isDie = true;
             targetObject.GetComponent<PlayerControl>().GetGold(Random.Range(50, 100));
             Destroy(gameObject , 5.0f);
         }
 
         return healthPoint;
+    }
+    private void UpdateHealthBar()
+    {
+        hpbar.fillAmount = (float)healthPoint / (float)maxHealthPoint;
+
+        hpPos.transform.LookAt(Camera.main.transform);
+
+        hptext.text = maxHealthPoint.ToString() + " / " + healthPoint.ToString();
     }
 
     private void RangedAttack()
@@ -99,6 +129,11 @@ public class ZombleControl : MonoBehaviour
     {
         while (!isDie)
         {
+            if (!targetObject)
+            {
+                StopCoroutine(SetTrace());
+            }
+
             yield return new WaitForSeconds(0.1f);
 
             if (targetObject && !isDie)
@@ -125,6 +160,11 @@ public class ZombleControl : MonoBehaviour
     {
         while (!isDie)
         {
+            if (!targetObject)
+            {
+                StopCoroutine(SetAnimation());
+            }
+
             yield return new WaitForSeconds(0.1f);
 
             switch (CurmonsterState)
@@ -142,7 +182,6 @@ public class ZombleControl : MonoBehaviour
                     {
                         RangedAttack(); // 원거리 투사체 발사하는 함수 .
                     }
-
                     break;
 
                 case monsterState.Dead: // 몬스터가 죽었을 때....

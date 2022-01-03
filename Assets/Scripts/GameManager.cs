@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
     private Text gunNameText;
     [SerializeField]
     private Text gunAmmoText;
+    [SerializeField]
+    private Image gunImage;
 
     [SerializeField]
     private PlayerControl playerControl;
@@ -25,9 +27,17 @@ public class GameManager : MonoBehaviour
     private Text saleGunNameText;
     [SerializeField]
     private Text saleGunPriceText;
+    [SerializeField]
+    private Image saleGunImage;
 
     [SerializeField]
     private Text goldText;
+
+    [SerializeField]
+    private Text itemCount;
+
+    [SerializeField]
+    private CrossHairControl crossHairControl;
 
     private void Start()
     {
@@ -36,7 +46,10 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        PrintPlayerGunInfo();
+        if (playerControl)
+        {
+            PrintPlayerGunInfo();
+        }
     }
     
     public void UpdatePlayerHealthPoint(float hp, float maxhp)
@@ -53,10 +66,25 @@ public class GameManager : MonoBehaviour
         gunAmmoText.text = gunControl.curAmmunition.ToString() + " / " + gunControl.ammunition.ToString();
     }
 
-    public void ShowGunInfo(string name , string price)
+    public void ShowItemInfo(string name, string price)
     {
         saleGunNameText.text = name;
         saleGunPriceText.text = price;
+    }
+
+    public void ShowGunInfo(string name , string price , Sprite sprite)
+    {
+        saleGunNameText.text = name;
+        saleGunPriceText.text = price;
+        saleGunImage.sprite = sprite;
+        saleGunImage.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    public void ResetGunInfo()
+    {
+        saleGunNameText.text = " ";
+        saleGunPriceText.text = " ";
+        saleGunImage.color = new Color(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
     public void UpdateGold(int curGold)
@@ -66,6 +94,19 @@ public class GameManager : MonoBehaviour
 
     public void ChangeGun(GunControl gunControl)
     {
-        this.gunControl = gunControl;
+        this.gunControl = gunControl; // √—¿« ¿ÃπÃ¡ˆµµ πŸ≤„¡Ÿ≤®¿”.
+
+        gunImage.sprite = gunControl.GunSprite;
+    }
+
+    public void UpdateItem(int itemCount)
+    {
+        this.itemCount.text = itemCount.ToString();
+    }
+
+    public void UpdateCrossHair(bool IsShot , bool IsRun)
+    {
+        crossHairControl.SetRunState(IsRun);
+        crossHairControl.SetShotState(IsShot);
     }
 }

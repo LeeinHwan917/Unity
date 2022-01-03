@@ -45,6 +45,13 @@ public class PlayerControl : MonoBehaviour
     [SerializeField]
     private int cur_Gold = 0;
 
+    [SerializeField]
+    private int curHealItemCount = 0;
+    [SerializeField]
+    private HealItem healitemScript;
+
+    private bool isRun = false;
+
     void Start()
     {
         playerAnimator = GetComponent<Animator>();
@@ -57,6 +64,7 @@ public class PlayerControl : MonoBehaviour
         Jump();
         MouseMove();
         ForwardRaycast();
+        UseItem();
 
         i_frameTimer += Time.deltaTime;
         gameManager.UpdateGold(cur_Gold);
@@ -92,18 +100,20 @@ public class PlayerControl : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        float runSpeed = 2.5f;
-
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
+            isRun = true;
             playerAnimator.SetBool("ShiftDown", true);
         }
         else
         {
-            runSpeed = 1.0f;
+            isRun = false;
             playerAnimator.SetBool("ShiftDown", false);
         }
 
+        SetCrossHairState();
+
+        float runSpeed = (isRun == true) ? 2.0f : 1.0f;
         transform.Translate(new Vector3(h, 0, v) * moveSpeed * Time.deltaTime * runSpeed);
 
         playerAnimator.SetFloat("Horizontal", h);
@@ -127,11 +137,17 @@ public class PlayerControl : MonoBehaviour
         mouseX += Input.GetAxis("Mouse X");
         mouseY += Input.GetAxis("Mouse Y");
 
-        mouseY = Mathf.Clamp(mouseY, -35.0f, 35.0f);
+        mouseY = Mathf.Clamp(mouseY, -37.0f, 37.0f);
 
         transform.localEulerAngles = new Vector3(0.0f, mouseX, 0.0f) * mouseSpeed;
         cameraObject.transform.localEulerAngles = new Vector3(-mouseY, mouseX, 0.0f) * mouseSpeed;
         cameraObject.transform.position = cameraTransform.position;
+    }
+
+    public void Reaction(float minX, float maxX, float minY, float maxY) // 반동
+    {
+        mouseX += Random.Range(minX, maxX);
+        mouseY += Random.Range(maxY, minY);
     }
 
     private void ForwardRaycast()
@@ -142,6 +158,10 @@ public class PlayerControl : MonoBehaviour
             if (hit.transform.gameObject.tag == "Gun")
             {
                 GunShopSys(hit);// 총 살때 쓰는거임
+            }
+            if (hit.transform.gameObject.tag == "Item")
+            {
+                ItemShopSys(hit);
             }
         }
         else
@@ -154,7 +174,7 @@ public class PlayerControl : MonoBehaviour
     {
         GunControl gunControl = hit.transform.gameObject.GetComponent<GunControl>();
 
-        gameManager.ShowGunInfo(gunControl.name, "PRICE : " + gunControl.price.ToString());
+        gameManager.ShowGunInfo(gunControl.name, "PRICE : " + gunControl.price.ToString(), gunControl.GunSprite);
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -162,27 +182,63 @@ public class PlayerControl : MonoBehaviour
             {
                 return;
             }
+
             GunControl _gunControl = gunObject.GetComponent<GunControl>();
 
-            _gunControl.SetEquip(false);
-            gunObject.transform.position = hit.transform.gameObject.transform.position;
-            gunObject.transform.rotation = hit.transform.gameObject.transform.rotation;
+            Transform gunTrans = gunControl.gunPos; // Hit에 맞은 총의 GunPos 저장
 
-            gunControl.SetEquip(true);
-            gunObject = hit.transform.gameObject;
-            gameManager.ChangeGun(gunObject.GetComponent<GunControl>());
+            gunControl.SetParent(_gunControl.gunPos); // Hit에 맞은 총의 Pos를 카메라에 상속된 GunPos로 변경
 
-            UseGold(gunControl.price);
+            _gunControl.SetParent(gunTrans); // 원래 가지고 있던 총의 Pos를  Hit에 맞은 총의 GunPos로 바꿈
+
+            _gunControl.SetEquip(false); // 원래 가지고 있던 총의 장착을 해제함.
+
+            gunControl.SetEquip(true); // Hit에 맞은 총의 장착을 함
+
+            gunObject = hit.transform.gameObject; // Player의 GunObject 또한 Hit에 맞은 오브젝트로 변경
+
+            gameManager.ChangeGun(gunObject.GetComponent<GunControl>()); // 총의 정보를 gamemanager.UI 처리
+
+            UseGold(gunControl.price); // 돈을 써야함.
         }
-        else
+    }
+
+    private void ItemShopSys(RaycastHit hit)
+    {
+        HealItem healItemscript = hit.transform.gameObject.GetComponent<HealItem>();
+        gameManager.ShowItemInfo(healItemscript.Itemname, "PRICE : " + healItemscript.price.ToString());
+
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            ResetGunInfo();
+            if (healItemscript.price > cur_Gold)
+            {
+                return;
+            }
+
+            curHealItemCount++;
+            UseGold(healItemscript.price); // 돈을 써야함.
+            gameManager.UpdateItem(curHealItemCount);
+        }
+    }
+    private void SetCrossHairState()
+    {
+        gameManager.UpdateCrossHair(gunObject.GetComponent<GunControl>().isShot, isRun);
+    }
+
+    private void UseItem()
+    {
+        if (Input.GetKeyDown(KeyCode.F) && curHealItemCount >= 1)
+        {
+            healitemScript.PlayerHeal();
+            curHealItemCount--;
+
+            gameManager.UpdateItem(curHealItemCount);
         }
     }
 
     public void ResetGunInfo()
     {
-        gameManager.ShowGunInfo(" ", " ");
+        gameManager.ResetGunInfo();
     }
 
     public void CheckHealthPoint(int damage)
@@ -192,6 +248,11 @@ public class PlayerControl : MonoBehaviour
         if (healthPoint <= 0)
         {
             Destroy(gameObject);
+            healthPoint = 0;
+        }
+        if (healthPoint >= MaxHealthPoint)
+        {
+            healthPoint = MaxHealthPoint;
         }
 
         gameManager.UpdatePlayerHealthPoint((float)healthPoint, (float)MaxHealthPoint);

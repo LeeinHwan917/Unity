@@ -1,16 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GunControl : MonoBehaviour
 {
     [SerializeField]
     private int damage = 8;
-
-    public int price = 0;
-    public string gunName;
-    public int ammunition = 8; // M1911 = 약실 1발 + 박스 탄창 7발
-    public int curAmmunition = 8;
 
     [SerializeField]
     private float shootCoolTime = 0.2f;
@@ -34,10 +30,31 @@ public class GunControl : MonoBehaviour
     private bool now_Equip = false;
 
     [SerializeField]
-    private Transform gunPos;
+    private bool isAuto = false;
+    public bool isShot = false;
 
     [SerializeField]
-    private bool isAuto = false;
+    private CrossHairControl crossHairControl;
+    private Vector3 totalAccuracyPos;
+
+    [Header("GUN_INFO")]
+    public Sprite GunSprite;
+    public int price = 0;
+    public string gunName;
+    public int ammunition = 8; // M1911 = 약실 1발 + 박스 탄창 7발
+    public int curAmmunition = 8;
+    public float Accuracy = 0.0f;
+    public Transform gunPos;
+
+    [Header("ReAction")]
+    [SerializeField]
+    private float minX = 0.0f;
+    [SerializeField]
+    private float maxX = 0.0f;
+    [SerializeField]
+    private float minY = 0.0f;
+    [SerializeField]
+    private float maxY = 0.0f;
 
     void Start()
     {
@@ -57,6 +74,10 @@ public class GunControl : MonoBehaviour
             {
                 Shot();
             }
+            else
+            {
+                isShot = false;
+            }
 
             if (Input.GetKeyDown(KeyCode.R) && curAmmunition < ammunition)
             {
@@ -64,9 +85,6 @@ public class GunControl : MonoBehaviour
             }
 
             shootCoolTimer += Time.deltaTime;
-
-            transform.position = gunPos.position;
-            transform.rotation = gunPos.rotation;
 
             m_Collider.isTrigger = true;
         }
@@ -83,29 +101,56 @@ public class GunControl : MonoBehaviour
             return;
         }
 
-        RaycastHit Hit;
-        float maxDistance = 100.0f;
+        isShot = true;
 
+        RaycastHit Hit;
+        float maxDistance = 400.0f;
         GameObject flash = Instantiate(muzzleFlash, muzzleTransform.position, muzzleTransform.rotation);
         flash.transform.localScale = new Vector3(0.32f, 0.32f, 0.32f);
         Destroy(flash, 0.15f);
 
-        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out Hit, maxDistance))
+        ShotReAction();
+
+        totalAccuracyPos = Camera.main.transform.forward + new Vector3(0.0f, Random.Range(-crossHairControl.poseAccuracy - Accuracy, crossHairControl.poseAccuracy - Accuracy), Random.Range(-crossHairControl.poseAccuracy - Accuracy, crossHairControl.poseAccuracy - Accuracy));
+
+        if (Physics.Raycast(cameraTransform.position, totalAccuracyPos, out Hit, maxDistance))
         {
             GameObject spark = Instantiate(sparkEffect, Hit.point, Quaternion.identity);
             spark.transform.LookAt(cameraTransform);
             spark.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
             Destroy(spark, 0.1f);
 
-            if (Hit.transform.gameObject.tag == "Enemies")
-            {
-                ZombleControl enemyControl = Hit.transform.gameObject.GetComponent<ZombleControl>();
-
-                enemyControl.CheckHealthPoint(damage);
-            }
+            EnemyHit(Hit);
         }
         curAmmunition--;
         shootCoolTimer = 0.0f;
+    }
+
+    private void EnemyHit(RaycastHit hit)
+    {
+        if (hit.transform.gameObject.tag == "Enemies")
+        {
+            ZombleControl enemyControl = hit.transform.gameObject.GetComponent<ZombleControl>();
+
+            if (enemyControl.CheckHealthPoint(0) <= 0)
+            {
+                return;
+            }
+
+            enemyControl.CheckHealthPoint(damage);
+        }
+    }
+
+    private void ShotReAction()
+    {
+        PlayerControl playerControl = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+
+        if (playerControl == null)
+        {
+            return;
+        }
+
+        playerControl.Reaction(minX, maxX, minY, maxY);
     }
 
     private void Reload()
@@ -119,5 +164,13 @@ public class GunControl : MonoBehaviour
     public void SetEquip(bool Equip)
     {
         this.now_Equip = Equip;
+    }
+
+    public void SetParent(Transform transform)
+    {
+        this.gunPos = transform;
+        this.transform.rotation = transform.rotation;
+        this.transform.position = transform.position;
+        this.transform.parent = gunPos;
     }
 }

@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - Enemies
   - Gun
+  - Item
   layers:
   - Default
   - TransparentFX
@@ -16,9 +17,9 @@ TagManager:
   - Water
   - UI
   - 
-  - 
-  - 
-  - 
+  - PlayerBorder
+  - Zomble
+  - Gun
   - 
   - 
   - 
