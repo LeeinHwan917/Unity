@@ -64,7 +64,7 @@ public class GunControl : MonoBehaviour
 
     void Update()
     {
-        if (now_Equip)
+        if (now_Equip && GameObject.Find("Male 2"))
         {
             if (Input.GetMouseButtonDown(0) && !isAuto)
             {

@@ -51,6 +51,9 @@ public class ZombleControl : MonoBehaviour
     [SerializeField]
     private Text hptext;
 
+    [SerializeField]
+    private GameManager gamemanager;
+
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -89,10 +92,13 @@ public class ZombleControl : MonoBehaviour
     {
         healthPoint -= damage;
 
+        GameObject.Find("GameManager").GetComponent<GameManager>().GetScore(damage);
+
         if (healthPoint <= 0 && !isDie)
         {
             healthPoint = 0;
             isDie = true;
+            GameObject.Find("GameManager").GetComponent<GameManager>().GetScore(Random.Range(50, 200));
             targetObject.GetComponent<PlayerControl>().GetGold(Random.Range(50, 100));
             Destroy(gameObject , 5.0f);
         }

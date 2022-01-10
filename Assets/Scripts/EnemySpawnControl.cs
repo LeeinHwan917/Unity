@@ -54,15 +54,15 @@ public class EnemySpawnControl : MonoBehaviour
         switch (enemy)
         {
             case 0:
-                zombleControl.InitEnemy(50 + spawnCount * 5, 3 + spawnCount, 2.5f + (float)spawnCount * 0.25f, targetObject);
+                zombleControl.InitEnemy(50 + spawnCount * 2, 3 + spawnCount, 2.5f + (float)spawnCount * 0.25f, targetObject);
                 break;
 
             case 1:
-                zombleControl.InitEnemy(30 + spawnCount * 3, 6 + spawnCount, 1.5f + (float)spawnCount * 0.04f, targetObject);
+                zombleControl.InitEnemy(30 + spawnCount * 1, 6 + spawnCount, 1.5f + (float)spawnCount * 0.04f, targetObject);
                 break;
 
             case 2:
-                zombleControl.InitEnemy(20 + spawnCount * 2, 8 + spawnCount, 3.5f + (float)spawnCount * 0.125f, targetObject);
+                zombleControl.InitEnemy(20 + spawnCount * 1, 8 + spawnCount, 3.5f + (float)spawnCount * 0.125f, targetObject);
                 break;
         }
     }

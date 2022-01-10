@@ -39,9 +39,37 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private CrossHairControl crossHairControl;
 
+
+    private int score = 0;
+    private static int maxScore = 0;
+
+    private float playTime = 0.0f;
+    private static float maxplayTime = 0.0f;
+
+    [SerializeField]
+    private GameObject escUiObject;
+
+    [SerializeField]
+    private GameObject gameoverObject;
+    [SerializeField]
+    private Text gameoverScoreText;
+    [SerializeField]
+    private Text gameoverMaxScoreText;
+    [SerializeField]
+    private Text gameoverTimeText;
+    [SerializeField]
+    private Text gameoverMaxTimeText;
+
+    [SerializeField]
+    private Text scoreText;
+    [SerializeField]
+    private Text playTimeText;
+
     private void Start()
     {
+        score = 0;
         hpBar.fillAmount = 1.0f;
+        LockCursor();
     }
 
     private void Update()
@@ -50,6 +78,40 @@ public class GameManager : MonoBehaviour
         {
             PrintPlayerGunInfo();
         }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            EscapeMenuEnter();
+        }
+
+        UpdateScore();
+        UpdateTime();
+
+        playTime += Time.deltaTime;
+    }
+
+    private void LockCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    private void UnLockCursor()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    private void UpdateScore()
+    {
+        scoreText.text = "Score : " + score.ToString("0000");
+    }
+
+    private void UpdateTime()
+    {
+        int cur_min = (int)playTime / 60;
+        int cur_sec = (int)playTime % 60;
+
+        playTimeText.text = cur_min.ToString("00") + " : " + cur_sec.ToString("00");
     }
     
     public void UpdatePlayerHealthPoint(float hp, float maxhp)
@@ -108,5 +170,51 @@ public class GameManager : MonoBehaviour
     {
         crossHairControl.SetRunState(IsRun);
         crossHairControl.SetShotState(IsShot);
+    }
+
+    public void GetScore(int score)
+    {
+        this.score += score;
+    }
+
+    public void EscapeMenuEnter()
+    {
+        UnLockCursor();
+        escUiObject.SetActive(true);
+        Time.timeScale = 0;
+    }
+    public void EscapeMenuExit()
+    {
+        LockCursor();
+        escUiObject.SetActive(false);
+        Time.timeScale = 1;
+    }
+    public void GameOver()
+    {
+        UnLockCursor();
+        Time.timeScale = 0;
+
+        gameoverObject.SetActive(true);
+
+        if (playTime > maxplayTime)
+        {
+            maxplayTime = playTime;
+        }
+
+        if (score > maxScore)
+        {
+            maxScore = score;
+        }
+
+        int cur_min = (int)playTime / 60;
+        int cur_sec = (int)playTime % 60;
+
+        int max_min = (int)maxplayTime / 60;
+        int max_sec = (int)maxplayTime % 60;
+
+        gameoverScoreText.text = "Score : " + score.ToString();
+        gameoverMaxScoreText.text = "MAXScore : " + maxScore.ToString();
+        gameoverTimeText.text = "Survival Time " + cur_min.ToString("00") + " : " + cur_sec.ToString("00");
+        gameoverMaxTimeText.text = "MAX Survival Time " + max_min.ToString("00") + " : " + max_sec.ToString("00");
     }
 }

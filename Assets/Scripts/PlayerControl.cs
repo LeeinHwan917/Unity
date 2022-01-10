@@ -227,7 +227,7 @@ public class PlayerControl : MonoBehaviour
 
     private void UseItem()
     {
-        if (Input.GetKeyDown(KeyCode.F) && curHealItemCount >= 1)
+        if (Input.GetKeyDown(KeyCode.F) && curHealItemCount >= 1 && healthPoint < MaxHealthPoint)
         {
             healitemScript.PlayerHeal();
             curHealItemCount--;
@@ -247,8 +247,9 @@ public class PlayerControl : MonoBehaviour
 
         if (healthPoint <= 0)
         {
-            Destroy(gameObject);
+            gameManager.GameOver();
             healthPoint = 0;
+            Destroy(gameObject);
         }
         if (healthPoint >= MaxHealthPoint)
         {
